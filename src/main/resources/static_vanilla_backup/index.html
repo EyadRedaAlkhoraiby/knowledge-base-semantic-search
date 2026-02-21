@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Base - Semantic Search</title>
+    <meta name="description" content="A Knowledge Base with Semantic Search capabilities">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🧠</span>
+                <h1>Knowledge Base</h1>
+            </div>
+            <p class="subtitle">Semantic Search Demo</p>
+            <div class="user-menu" id="userMenu">
+                <span class="user-info">
+                    <span class="user-icon">👤</span>
+                    <span id="usernameDisplay">User</span>
+                    <span class="user-role" id="userRoleDisplay"></span>
+                </span>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-item">
+                <span class="stat-value" id="docCount">0</span>
+                <span class="stat-label">Documents</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="vocabSize">768</span>
+                <span class="stat-label">Embedding Dimensions</span>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="search-container">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search by meaning" autocomplete="off">
+                    <button class="search-btn" id="searchBtn">Search</button>
+                </div>
+                <p class="search-hint">
+                    💡 <strong>Semantic Search</strong> finds documents by meaning, not just keywords!
+                </p>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2>Search Results</h2>
+                <span class="results-count" id="resultsCount"></span>
+            </div>
+            <div class="results-container" id="resultsContainer">
+                <!-- Results will be injected here -->
+            </div>
+        </section>
+
+        <!-- All Documents Section -->
+        <section class="documents-section">
+            <div class="section-header">
+                <h2>All Documents</h2>
+                <div class="header-actions">
+                    <div class="header-actions">
+                        <input type="file" id="csvFileInput" accept=".csv, .xlsx, .xls" style="display: none;">
+                        <button class="import-btn" id="importCsvBtn" style="display: none;">📁 Import File</button>
+                        <button class="add-btn" id="addDocBtn" style="display: none;">+ Add Document</button>
+                        <button class="delete-all-btn" id="deleteAllBtn" style="display: none;">🗑️ Delete All</button>
+                    </div>
+                </div>
+            </div>
+            <div class="documents-grid" id="documentsGrid">
+                <!-- Documents will be injected here -->
+            </div>
+        </section>
+
+        <!-- Add Document Modal -->
+        <div class="modal-overlay" id="modalOverlay">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>Add New Document</h3>
+                    <button class="close-btn" id="closeModalBtn">&times;</button>
+                </div>
+                <form id="documentForm">
+                    <div class="form-group">
+                        <label for="docTitle">Title</label>
+                        <input type="text" id="docTitle" placeholder="Document title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="docCategory">Category</label>
+                        <input type="text" id="docCategory" placeholder="e.g., Programming, DevOps, AI/ML">
+                    </div>
+                    <div class="form-group">
+                        <label for="docContent">Content</label>
+                        <textarea id="docContent" rows="5" placeholder="Document content..." required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn" id="cancelBtn">Cancel</button>
+                        <button type="submit" class="submit-btn">Add Document</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Document Detail Modal -->
+        <div class="modal-overlay" id="detailModalOverlay">
+            <div class="modal detail-modal">
+                <div class="modal-header">
+                    <h3 id="detailTitle">Document Title</h3>
+                    <button class="close-btn" id="closeDetailBtn">&times;</button>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-category" id="detailCategory">Category</span>
+                    <p class="detail-text" id="detailText">Content</p>
+                    <div class="detail-meta" id="detailMeta">Created: </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll to Top Button -->
+        <button class="scroll-top-btn" id="scrollTopBtn" title="Go to top">↑</button>
+
+        <!-- Toast Notification -->
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

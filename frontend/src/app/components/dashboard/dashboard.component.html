@@ -1,0 +1,192 @@
+<div class="app-container">
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">🧠</span>
+            <h1>Knowledge Base</h1>
+        </div>
+        <p class="subtitle">Semantic Search Demo</p>
+        <div class="user-menu">
+            <span class="user-info">
+                <span class="user-icon">👤</span>
+                <span>{{ currentUser?.username || 'User' }}</span>
+                <span class="user-role">{{ currentUser?.role }}</span>
+            </span>
+            <button class="logout-btn" (click)="handleLogout()">Logout</button>
+        </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-value">{{ stats.documentCount }}</span>
+            <span class="stat-label">Documents</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">{{ stats.embeddingDimension || 768 }}</span>
+            <span class="stat-label">Embedding Dimensions</span>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="search-container">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" [(ngModel)]="searchQuery" placeholder="Search by meaning" autocomplete="off"
+                    (keypress)="onSearchKeypress($event)">
+                <select class="category-filter" [(ngModel)]="selectedCategory">
+                    <option value="">All Categories</option>
+                    <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+                </select>
+                <button class="search-btn" (click)="handleSearch()">Search</button>
+            </div>
+            <p class="search-hint">
+                💡 <strong>Semantic Search</strong> finds documents by meaning, not just keywords!
+            </p>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results-section" *ngIf="showResults">
+        <div class="results-header">
+            <h2>Search Results</h2>
+            <span class="results-count">{{ searchResults.length }} results</span>
+        </div>
+        <div class="results-container">
+            <div class="loading" *ngIf="searchResults.length === 0">No matching documents found</div>
+            <div class="result-card" *ngFor="let result of searchResults; let i = index" [class.best-match]="i === 0"
+                (click)="showDocument(result.document)">
+                <div class="result-header">
+                    <h3 class="result-title">{{ result.document.title }}</h3>
+                    <div class="similarity-badge most-matched" *ngIf="i === 0">
+                        <span>⭐</span> Most Matched
+                    </div>
+                </div>
+                <p class="result-content">{{ result.document.content }}</p>
+                <span class="result-category">{{ result.document.category || 'Uncategorized' }}</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- All Documents Section -->
+    <section class="documents-section">
+        <div class="section-header">
+            <h2>All Documents</h2>
+            <div class="header-actions" *ngIf="isAdmin">
+                <input type="file" #fileInput accept=".csv, .xlsx, .xls" style="display: none;"
+                    (change)="onFileSelected($event)">
+                <button class="import-btn" (click)="fileInput.click()">📁 Import File</button>
+                <button class="add-btn" (click)="openAddModal()">+ Add Document</button>
+                <button class="delete-all-btn" (click)="deleteAllDocuments()">🗑️ Delete All</button>
+            </div>
+        </div>
+        <div class="documents-grid">
+            <div class="loading" *ngIf="documents.length === 0">No documents found</div>
+            <div class="document-card" *ngFor="let doc of documents" (click)="showDocument(doc)">
+                <h3 class="document-title">{{ doc.title }}</h3>
+                <span class="document-category">{{ doc.category || 'Uncategorized' }}</span>
+                <div class="document-meta-small" *ngIf="isAdmin">
+                    <span>👤 {{ doc.createdBy || 'System' }}</span>
+                </div>
+                <p class="document-snippet">{{ doc.content }}</p>
+                <div class="document-actions" *ngIf="isAdmin">
+                    <button class="edit-btn" (click)="openEditModal($event, doc)">✏️ Edit</button>
+                    <button class="delete-btn" (click)="deleteDocument($event, doc.id)">Delete</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Add Document Modal -->
+    <div class="modal-overlay" [class.active]="showAddModal" (click)="onModalBackdropClick($event, 'add')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add New Document</h3>
+                <button class="close-btn" (click)="closeAddModal()">&times;</button>
+            </div>
+            <form (ngSubmit)="submitDocument()">
+                <div class="form-group">
+                    <label for="docTitle">Title</label>
+                    <input type="text" id="docTitle" [(ngModel)]="newDocTitle" name="docTitle"
+                        placeholder="Document title" required>
+                </div>
+                <div class="form-group">
+                    <label for="docCategory">Category</label>
+                    <input type="text" id="docCategory" [(ngModel)]="newDocCategory" name="docCategory"
+                        placeholder="e.g., Programming, DevOps, AI/ML">
+                </div>
+                <div class="form-group">
+                    <label for="docContent">Content</label>
+                    <textarea id="docContent" [(ngModel)]="newDocContent" name="docContent" rows="5"
+                        placeholder="Document content..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" (click)="closeAddModal()">Cancel</button>
+                    <button type="submit" class="submit-btn">Add Document</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Document Modal -->
+    <div class="modal-overlay" [class.active]="showEditModal" (click)="onModalBackdropClick($event, 'edit')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Edit Document</h3>
+                <button class="close-btn" (click)="closeEditModal()">&times;</button>
+            </div>
+            <form (ngSubmit)="submitEdit()">
+                <div class="form-group">
+                    <label for="editTitle">Title</label>
+                    <input type="text" id="editTitle" [(ngModel)]="editDocTitle" name="editTitle"
+                        placeholder="Document title" required>
+                </div>
+                <div class="form-group">
+                    <label for="editCategory">Category</label>
+                    <input type="text" id="editCategory" [(ngModel)]="editDocCategory" name="editCategory"
+                        placeholder="e.g., Programming, DevOps, AI/ML">
+                </div>
+                <div class="form-group">
+                    <label for="editContent">Content</label>
+                    <textarea id="editContent" [(ngModel)]="editDocContent" name="editContent" rows="5"
+                        placeholder="Document content..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" (click)="closeEditModal()">Cancel</button>
+                    <button type="submit" class="submit-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Document Detail Modal -->
+    <div class="modal-overlay" [class.active]="showDetailModal" (click)="onModalBackdropClick($event, 'detail')">
+        <div class="modal detail-modal" *ngIf="selectedDoc">
+            <div class="modal-header">
+                <h3>{{ selectedDoc.title }}</h3>
+                <button class="close-btn" (click)="closeDetailModal()">&times;</button>
+            </div>
+            <div class="detail-content">
+                <span class="detail-category">{{ selectedDoc.category || 'Uncategorized' }}</span>
+                <p class="detail-text">{{ selectedDoc.content }}</p>
+                <div class="detail-meta">
+                    <span>📅 Created: {{ formatDate(selectedDoc.createdAt) }}</span>
+                    <br *ngIf="isAdmin">
+                    <span *ngIf="isAdmin">👤 Created By: {{ selectedDoc.createdBy || 'System' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-top-btn" [class.visible]="showScrollTop" (click)="scrollToTop()" title="Go to top">↑</button>
+
+    <!-- Toast Notification -->
+    <div class="toast" [class.active]="(toastService.toast$ | async)?.visible"
+        [class.success]="(toastService.toast$ | async)?.type === 'success'"
+        [class.error]="(toastService.toast$ | async)?.type === 'error'"
+        [class.info]="(toastService.toast$ | async)?.type === 'info'">
+        {{ (toastService.toast$ | async)?.message }}
+    </div>
+</div>
