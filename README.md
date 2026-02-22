@@ -95,7 +95,7 @@ Navigate to **http://localhost:4200** in your browser.
 
 Default admin account:
 - **Username:** `admin`
-- **Password:** `admin`
+- **Password:** `admin123`
 
 ---
 
